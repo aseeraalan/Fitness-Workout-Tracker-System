@@ -5,6 +5,9 @@ import { HomePage } from './pages/HomePage.jsx';
 import { RegisterPage } from './pages/RegisterPage.jsx';
 import { LoginPage } from './pages/LoginPage.jsx';
 import { ProfilePage } from './pages/ProfilePage.jsx';
+import { WorkoutHistoryPage } from './pages/WorkoutHistoryPage.jsx';
+import { WorkoutFormPage } from './pages/WorkoutFormPage.jsx';
+import { WorkoutDetailPage } from './pages/WorkoutDetailPage.jsx';
 
 export default function App() {
   const { bootError, loading } = useAuth();
@@ -53,6 +56,38 @@ export default function App() {
         element={
           <ProtectedRoute>
             <ProfilePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/workouts"
+        element={
+          <ProtectedRoute>
+            <WorkoutHistoryPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/workouts/new"
+        element={
+          <ProtectedRoute>
+            <WorkoutFormPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/workouts/:id/edit"
+        element={
+          <ProtectedRoute>
+            <WorkoutFormPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/workouts/:id"
+        element={
+          <ProtectedRoute>
+            <WorkoutDetailPage />
           </ProtectedRoute>
         }
       />

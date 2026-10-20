@@ -8,6 +8,7 @@ import { getConfig } from './config/env.js';
 import { configurePassport } from './config/passport.js';
 import { createAuthRouter } from './routes/auth.js';
 import { createProfileRouter } from './routes/profile.js';
+import { createWorkoutRouter } from './routes/workouts.js';
 import { ensureCsrfToken, requireCsrf } from './middleware/csrf.js';
 import { createAuthLimiter } from './middleware/rateLimit.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
@@ -37,7 +38,7 @@ export function createApp({
     })
   );
 
-  app.use(express.json({ limit: '16kb' }));
+  app.use(express.json({ limit: '64kb' }));
   app.use(express.urlencoded({ extended: false }));
 
   const store =
@@ -89,6 +90,7 @@ export function createApp({
     })
   );
   app.use('/api/profile', createProfileRouter());
+  app.use('/api/workouts', createWorkoutRouter());
 
   app.use(notFound);
   app.use(errorHandler);

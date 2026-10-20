@@ -84,7 +84,23 @@ export function createApiClient({ onUnauthorized } = {}) {
     getProfile: () => request('/api/profile'),
     updateProfile: (body) => request('/api/profile', { method: 'PATCH', body: JSON.stringify(body) }),
     googleStartUrl: () => apiUrl('/api/auth/google'),
+    listWorkouts: (query = {}) => request(`/api/workouts${workoutQueryString(query)}`),
+    createWorkout: (body) => request('/api/workouts', { method: 'POST', body: JSON.stringify(body) }),
+    getWorkout: (id) => request(`/api/workouts/${id}`),
+    updateWorkout: (id, body) =>
+      request(`/api/workouts/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
+    deleteWorkout: (id) => request(`/api/workouts/${id}`, { method: 'DELETE' }),
   };
+}
+
+function workoutQueryString(query = {}) {
+  const params = new URLSearchParams();
+  if (query.from) params.set('from', query.from);
+  if (query.to) params.set('to', query.to);
+  if (query.page) params.set('page', String(query.page));
+  if (query.limit) params.set('limit', String(query.limit));
+  const value = params.toString();
+  return value ? `?${value}` : '';
 }
 
 export const api = createApiClient();

@@ -2,12 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { AppHeader } from '../components/AppHeader.jsx';
 import { Field, TextInput } from '../components/FormField.jsx';
-import {
-  FITNESS_GOAL_LABELS,
-  FITNESS_GOALS,
-  USERNAME_RULES_TEXT,
-  validateProfile,
-} from '../validation.js';
+import { USERNAME_RULES_TEXT, validateProfile } from '../validation.js';
 
 export function ProfilePage() {
   const { user, saveProfile } = useAuth();
@@ -16,7 +11,6 @@ export function ProfilePage() {
     username: user.username,
     heightCm: user.heightCm ?? '',
     weightKg: user.weightKg ?? '',
-    fitnessGoal: user.fitnessGoal || '',
   });
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState('');
@@ -43,7 +37,6 @@ export function ProfilePage() {
         username: values.username,
         heightCm: values.heightCm === '' ? '' : Number(values.heightCm),
         weightKg: values.weightKg === '' ? '' : Number(values.weightKg),
-        fitnessGoal: values.fitnessGoal,
       });
       setMessage('Profile saved.');
     } catch (error) {
@@ -94,22 +87,6 @@ export function ProfilePage() {
               onChange={update}
               error={errors.weightKg}
             />
-            <Field id="fitnessGoal" label="Fitness goal" error={errors.fitnessGoal}>
-              <select
-                id="fitnessGoal"
-                name="fitnessGoal"
-                value={values.fitnessGoal}
-                onChange={update}
-                aria-invalid={Boolean(errors.fitnessGoal)}
-              >
-                <option value="">Choose a goal (optional)</option>
-                {FITNESS_GOALS.map((goal) => (
-                  <option key={goal} value={goal}>
-                    {FITNESS_GOAL_LABELS[goal]}
-                  </option>
-                ))}
-              </select>
-            </Field>
           </div>
           {formError ? (
             <p className="form-error" role="alert">

@@ -67,6 +67,7 @@ export function AuthProvider({ children, client = api }) {
         return data.user;
       },
       googleStartUrl: client.googleStartUrl(),
+      client,
     }),
     [user, loading, bootError, authConfig, refresh, client]
   );

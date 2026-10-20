@@ -5,6 +5,7 @@ import MongoStore from 'connect-mongo';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
 import { User } from '../src/models/User.js';
+import { Workout } from '../src/models/Workout.js';
 
 let mongo;
 let app;
@@ -26,6 +27,7 @@ export async function startTestApp() {
 
   await mongoose.connect(mongoUri);
   await User.init();
+  await Workout.init();
 
   sessionStore = MongoStore.create({
     mongoUrl: mongoUri,
@@ -88,6 +90,34 @@ export async function registerUser(testAgent, overrides = {}) {
   };
   const response = await testAgent
     .post('/api/auth/register')
+    .set('X-CSRF-Token', token)
+    .send(payload);
+  return { response, payload, token };
+}
+
+export function sampleWorkout(overrides = {}) {
+  return {
+    date: '2026-10-18',
+    title: 'Lower body strength',
+    notes: 'Felt strong.',
+    exercises: [
+      {
+        name: 'Back squat',
+        sets: [
+          { reps: 5, weightKg: 80 },
+          { reps: 5, weightKg: 85 },
+        ],
+      },
+    ],
+    ...overrides,
+  };
+}
+
+export async function createWorkout(testAgent, overrides = {}) {
+  const token = await csrfFor(testAgent);
+  const payload = sampleWorkout(overrides);
+  const response = await testAgent
+    .post('/api/workouts')
     .set('X-CSRF-Token', token)
     .send(payload);
   return { response, payload, token };

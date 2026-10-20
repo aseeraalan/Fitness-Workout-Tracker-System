@@ -38,3 +38,21 @@ export function TextInput({ id, label, error, hint, type = 'text', autoComplete,
     </Field>
   );
 }
+
+export function TextArea({ id, label, error, hint, ...props }) {
+  const describedBy = [hint ? `${id}-hint` : null, error ? `${id}-error` : null]
+    .filter(Boolean)
+    .join(' ') || undefined;
+
+  return (
+    <Field id={id} label={label} error={error} hint={hint}>
+      <textarea
+        id={id}
+        name={id}
+        aria-invalid={Boolean(error)}
+        aria-describedby={describedBy}
+        {...props}
+      />
+    </Field>
+  );
+}
