@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import './registerLifecycle.js';
 import { agent, csrfFor, loginUser, registerUser } from './helpers.js';
 
 describe('S1-05 / S1-06 login, logout, and session persistence', () => {

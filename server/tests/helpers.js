@@ -6,6 +6,7 @@ import request from 'supertest';
 import { createApp } from '../src/app.js';
 import { User } from '../src/models/User.js';
 import { Workout } from '../src/models/Workout.js';
+import { GymSession } from '../src/models/GymSession.js';
 
 let mongo;
 let app;
@@ -28,6 +29,7 @@ export async function startTestApp() {
   await mongoose.connect(mongoUri);
   await User.init();
   await Workout.init();
+  await GymSession.init();
 
   sessionStore = MongoStore.create({
     mongoUrl: mongoUri,
@@ -120,6 +122,38 @@ export async function createWorkout(testAgent, overrides = {}) {
     .post('/api/workouts')
     .set('X-CSRF-Token', token)
     .send(payload);
+  return { response, payload, token };
+}
+
+export const googleProfile = {
+  id: 'google-user-123',
+  displayName: 'Jordan Miles',
+  emails: [{ value: 'jordan@example.com' }],
+};
+
+export async function loginGoogle(testAgent, profile = googleProfile) {
+  const token = await csrfFor(testAgent);
+  const response = await testAgent
+    .post('/api/auth/google/mock')
+    .set('X-CSRF-Token', token)
+    .send({ profile });
+  return { response, token, profile };
+}
+
+export function sampleSession(overrides = {}) {
+  return {
+    date: '2026-10-18',
+    title: 'Gym - lower body',
+    notes: 'Rack 3',
+    startTime: '18:30',
+    ...overrides,
+  };
+}
+
+export async function createSession(testAgent, overrides = {}) {
+  const token = await csrfFor(testAgent);
+  const payload = sampleSession(overrides);
+  const response = await testAgent.post('/api/sessions').set('X-CSRF-Token', token).send(payload);
   return { response, payload, token };
 }
 

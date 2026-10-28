@@ -9,6 +9,9 @@ import { configurePassport } from './config/passport.js';
 import { createAuthRouter } from './routes/auth.js';
 import { createProfileRouter } from './routes/profile.js';
 import { createWorkoutRouter } from './routes/workouts.js';
+import { createSessionRouter } from './routes/sessions.js';
+import { createCalendarRouter } from './routes/calendar.js';
+import { createProgressRouter } from './routes/progress.js';
 import { ensureCsrfToken, requireCsrf } from './middleware/csrf.js';
 import { createAuthLimiter } from './middleware/rateLimit.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
@@ -91,6 +94,9 @@ export function createApp({
   );
   app.use('/api/profile', createProfileRouter());
   app.use('/api/workouts', createWorkoutRouter());
+  app.use('/api/sessions', createSessionRouter());
+  app.use('/api/calendar', createCalendarRouter());
+  app.use('/api/progress', createProgressRouter());
 
   app.use(notFound);
   app.use(errorHandler);

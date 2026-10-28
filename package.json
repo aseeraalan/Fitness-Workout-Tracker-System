@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "CPS714 Fitness and Workout Tracker System — Sprint 1 auth/profile plus Sprint 2 workout logging",
+  "description": "CPS714 Fitness and Workout Tracker System — auth, workout logging, calendar, and basic progress tracking",
   "scripts": {
     "install:all": "npm install --prefix server && npm install --prefix client",
     "dev": "concurrently -n server,client -c green,cyan \"npm run dev --prefix server\" \"npm run dev --prefix client\"",

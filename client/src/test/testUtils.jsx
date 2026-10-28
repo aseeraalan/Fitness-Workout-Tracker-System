@@ -31,10 +31,23 @@ function toPublicWorkout(workout) {
   };
 }
 
+function toPublicSession(session) {
+  return {
+    id: session.id,
+    date: session.date,
+    title: session.title,
+    notes: session.notes || '',
+    startTime: session.startTime || '',
+    createdAt: session.createdAt,
+    updatedAt: session.updatedAt,
+  };
+}
+
 export function createMockClient({
   user = null,
   googleEnabled = false,
   workouts: seedWorkouts = [],
+  sessions: seedSessions = [],
 } = {}) {
   let currentUser = user;
   let workouts = seedWorkouts.map((workout, index) => ({
@@ -44,8 +57,18 @@ export function createMockClient({
     notes: workout.notes || '',
     ...workout,
   }));
-  let nextId = workouts.length + 1;
+  let sessions = seedSessions.map((session, index) => ({
+    ownerId: session.ownerId || user?.id || '1',
+    createdAt: session.createdAt || `2026-10-18T01:00:0${index}Z`,
+    updatedAt: session.updatedAt || `2026-10-18T01:00:0${index}Z`,
+    notes: session.notes || '',
+    startTime: session.startTime || '',
+    ...session,
+  }));
+  let nextId = workouts.length + sessions.length + 1;
   let failNextSave = false;
+  let failCalendar = false;
+  let failProgress = false;
   const calls = [];
 
   function requireUser() {
@@ -69,6 +92,12 @@ export function createMockClient({
     calls,
     failNextSave() {
       failNextSave = true;
+    },
+    failNextCalendar() {
+      failCalendar = true;
+    },
+    failNextProgress() {
+      failProgress = true;
     },
     loadCsrf: async () => 'csrf-test-token',
     getConfig: async () => ({
@@ -189,12 +218,140 @@ export function createMockClient({
       workouts = workouts.filter((item) => item.id !== id);
       return null;
     },
+    listCalendar: async (query = {}) => {
+      requireUser();
+      calls.push(['listCalendar', query]);
+      if (failCalendar) {
+        failCalendar = false;
+        apiError('Could not load calendar.');
+      }
+      if (!query.from || !query.to) {
+        apiError('From date is required.', { status: 400, code: 'VALIDATION_ERROR' });
+      }
+      const ownedWorkouts = workouts.filter(
+        (item) => item.ownerId === currentUser.id && item.date >= query.from && item.date <= query.to
+      );
+      const ownedSessions = sessions.filter(
+        (item) => item.ownerId === currentUser.id && item.date >= query.from && item.date <= query.to
+      );
+      return {
+        from: query.from,
+        to: query.to,
+        workouts: ownedWorkouts.map(toPublicWorkout),
+        sessions: ownedSessions.map(toPublicSession),
+      };
+    },
+    createSession: async (body) => {
+      requireUser();
+      calls.push(['createSession', body]);
+      const session = {
+        id: String(nextId),
+        ownerId: currentUser.id,
+        date: body.date,
+        title: body.title.trim(),
+        notes: (body.notes || '').trim(),
+        startTime: body.startTime || '',
+        createdAt: '2026-10-20T12:00:00.000Z',
+        updatedAt: '2026-10-20T12:00:00.000Z',
+      };
+      nextId += 1;
+      sessions = [session, ...sessions];
+      return { session: toPublicSession(session) };
+    },
+    getSession: async (id) => {
+      requireUser();
+      const session = sessions.find((item) => item.id === id && item.ownerId === currentUser.id);
+      if (!session) apiError('Gym session not found.', { status: 404, code: 'NOT_FOUND' });
+      return { session: toPublicSession(session) };
+    },
+    updateSession: async (id, body) => {
+      requireUser();
+      const session = sessions.find((item) => item.id === id && item.ownerId === currentUser.id);
+      if (!session) apiError('Gym session not found.', { status: 404, code: 'NOT_FOUND' });
+      Object.assign(session, {
+        date: body.date,
+        title: body.title.trim(),
+        notes: (body.notes || '').trim(),
+        startTime: body.startTime || '',
+      });
+      return { session: toPublicSession(session) };
+    },
+    deleteSession: async (id) => {
+      requireUser();
+      sessions = sessions.filter((item) => !(item.id === id && item.ownerId === currentUser.id));
+      return null;
+    },
+    listSessions: async (query = {}) => {
+      requireUser();
+      const ownedSessions = sessions.filter(
+        (item) =>
+          item.ownerId === currentUser.id &&
+          (!query.from || item.date >= query.from) &&
+          (!query.to || item.date <= query.to)
+      );
+      return { sessions: ownedSessions.map(toPublicSession) };
+    },
+    getProgress: async (query = {}) => {
+      requireUser();
+      calls.push(['getProgress', query]);
+      if (failProgress) {
+        failProgress = false;
+        apiError('Could not load progress.');
+      }
+      const items = workouts.filter(
+        (item) =>
+          item.ownerId === currentUser.id &&
+          (!query.from || item.date >= query.from) &&
+          (!query.to || item.date <= query.to)
+      );
+      const exercises = [];
+      const seen = new Set();
+      for (const workout of items) {
+        for (const exercise of workout.exercises || []) {
+          const key = exercise.name.toLowerCase();
+          if (seen.has(key)) continue;
+          seen.add(key);
+          exercises.push(exercise.name);
+        }
+      }
+      const points = [];
+      if (query.exercise) {
+        const target = query.exercise.toLowerCase();
+        for (const workout of items) {
+          let highest = null;
+          for (const exercise of workout.exercises || []) {
+            if (exercise.name.toLowerCase() !== target) continue;
+            for (const set of exercise.sets || []) {
+              if (highest === null || set.weightKg > highest) highest = set.weightKg;
+            }
+          }
+          if (highest !== null) {
+            points.push({
+              date: workout.date,
+              workoutId: workout.id,
+              title: workout.title,
+              highestWeightKg: highest,
+            });
+          }
+        }
+      }
+      return {
+        from: query.from,
+        to: query.to,
+        unit: 'kg',
+        workoutsCompleted: items.length,
+        exercises,
+        exercise: query.exercise || '',
+        points,
+      };
+    },
   };
 }
 
 export function renderWithAuth(ui, { client, route = '/', state } = {}) {
+  const url = new URL(route, 'http://localhost');
   return (
-    <MemoryRouter initialEntries={[{ pathname: route, state }]}>
+    <MemoryRouter initialEntries={[{ pathname: url.pathname, search: url.search, state }]}>
       <AuthProvider client={client}>{ui}</AuthProvider>
     </MemoryRouter>
   );

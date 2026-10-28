@@ -90,6 +90,14 @@ export function createApiClient({ onUnauthorized } = {}) {
     updateWorkout: (id, body) =>
       request(`/api/workouts/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
     deleteWorkout: (id) => request(`/api/workouts/${id}`, { method: 'DELETE' }),
+    listCalendar: (query = {}) => request(`/api/calendar${workoutQueryString(query)}`),
+    listSessions: (query = {}) => request(`/api/sessions${workoutQueryString(query)}`),
+    createSession: (body) => request('/api/sessions', { method: 'POST', body: JSON.stringify(body) }),
+    getSession: (id) => request(`/api/sessions/${id}`),
+    updateSession: (id, body) =>
+      request(`/api/sessions/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
+    deleteSession: (id) => request(`/api/sessions/${id}`, { method: 'DELETE' }),
+    getProgress: (query = {}) => request(`/api/progress${workoutQueryString(query)}`),
   };
 }
 
@@ -99,6 +107,7 @@ function workoutQueryString(query = {}) {
   if (query.to) params.set('to', query.to);
   if (query.page) params.set('page', String(query.page));
   if (query.limit) params.set('limit', String(query.limit));
+  if (query.exercise) params.set('exercise', query.exercise);
   const value = params.toString();
   return value ? `?${value}` : '';
 }

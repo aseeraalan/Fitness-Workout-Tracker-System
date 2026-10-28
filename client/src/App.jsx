@@ -8,6 +8,10 @@ import { ProfilePage } from './pages/ProfilePage.jsx';
 import { WorkoutHistoryPage } from './pages/WorkoutHistoryPage.jsx';
 import { WorkoutFormPage } from './pages/WorkoutFormPage.jsx';
 import { WorkoutDetailPage } from './pages/WorkoutDetailPage.jsx';
+import { CalendarPage } from './pages/CalendarPage.jsx';
+import { SessionFormPage } from './pages/SessionFormPage.jsx';
+import { SessionDetailPage } from './pages/SessionDetailPage.jsx';
+import { ProgressPage } from './pages/ProgressPage.jsx';
 
 export default function App() {
   const { bootError, loading } = useAuth();
@@ -88,6 +92,46 @@ export default function App() {
         element={
           <ProtectedRoute>
             <WorkoutDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/calendar"
+        element={
+          <ProtectedRoute>
+            <CalendarPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/progress"
+        element={
+          <ProtectedRoute>
+            <ProgressPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sessions/new"
+        element={
+          <ProtectedRoute>
+            <SessionFormPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sessions/:id/edit"
+        element={
+          <ProtectedRoute>
+            <SessionFormPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sessions/:id"
+        element={
+          <ProtectedRoute>
+            <SessionDetailPage />
           </ProtectedRoute>
         }
       />

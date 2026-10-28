@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import './registerLifecycle.js';
 import { User } from '../src/models/User.js';
 import { findOrCreateGoogleUser } from '../src/services/googleAuth.js';
 import { agent, csrfFor, loginUser, registerUser } from './helpers.js';

@@ -14,12 +14,18 @@ export function HomePage() {
         {user ? (
           <>
             <p className="lede">
-              Signed in as <strong>{user.username}</strong>. Log workouts, review your history, or
-              open your profile.
+              Signed in as <strong>{user.username}</strong>. Log workouts, open the calendar, or
+              review progress.
             </p>
             <div className="home-actions">
-              <Link className="button button-primary" to="/workouts">
+              <Link className="button button-primary" to="/calendar">
+                Calendar
+              </Link>
+              <Link className="button button-secondary" to="/workouts">
                 Workout history
+              </Link>
+              <Link className="button button-secondary" to="/progress">
+                Progress
               </Link>
               <Link className="button button-secondary" to="/workouts/new">
                 Log a workout
@@ -32,8 +38,8 @@ export function HomePage() {
         ) : (
           <>
             <p className="lede">
-              Create an account or sign in to log workouts, view your history, and manage your
-              profile.
+              Create an account or sign in to log workouts, schedule gym sessions, and view your
+              calendar.
             </p>
             <div className="home-actions">
               <Link className="button button-primary" to="/register">

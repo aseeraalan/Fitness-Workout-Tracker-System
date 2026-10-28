@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { AppHeader } from '../components/AppHeader.jsx';
 import { formatWorkoutDate } from '../validation.js';
+import { safeInternalPath, withReturnTo } from '../navigation.js';
 
 export function WorkoutDetailPage() {
   const { id } = useParams();
   const { client } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const returnTo = safeInternalPath(searchParams.get('returnTo'), '');
   const [workout, setWorkout] = useState(null);
   const [loadError, setLoadError] = useState('');
   const [actionError, setActionError] = useState('');
@@ -41,7 +44,7 @@ export function WorkoutDetailPage() {
     setActionError('');
     try {
       await client.deleteWorkout(id);
-      navigate('/workouts', { replace: true, state: { message: 'Workout deleted.' } });
+      navigate(returnTo || '/workouts', { replace: true, state: { message: 'Workout deleted.' } });
     } catch (error) {
       setActionError(error.payload?.message || error.message);
       setConfirmingDelete(false);
@@ -62,8 +65,8 @@ export function WorkoutDetailPage() {
           <p className="form-error" role="alert">
             {loadError}
           </p>
-          <Link className="button button-secondary" to="/workouts">
-            Back to history
+          <Link className="button button-secondary" to={returnTo || '/workouts'}>
+            {returnTo ? 'Back to calendar' : 'Back to history'}
           </Link>
         </main>
       ) : (
@@ -131,14 +134,14 @@ export function WorkoutDetailPage() {
             </div>
           ) : (
             <div className="inline-actions">
-              <Link className="button button-primary" to={`/workouts/${workout.id}/edit`}>
+              <Link className="button button-primary" to={withReturnTo(`/workouts/${workout.id}/edit`, returnTo)}>
                 Edit
               </Link>
               <button type="button" className="button-danger" onClick={() => setConfirmingDelete(true)}>
                 Delete
               </button>
-              <Link className="button button-secondary" to="/workouts">
-                Back to history
+              <Link className="button button-secondary" to={returnTo || '/workouts'}>
+                {returnTo ? 'Back to calendar' : 'Back to history'}
               </Link>
             </div>
           )}

@@ -32,8 +32,14 @@ export function AppHeader({ title, headingLevel = 'p' }) {
       <nav className="nav-actions" aria-label="Account">
         {user ? (
           <>
+            <Link className="button button-secondary" to="/calendar">
+              Calendar
+            </Link>
             <Link className="button button-secondary" to="/workouts">
               Workouts
+            </Link>
+            <Link className="button button-secondary" to="/progress">
+              Progress
             </Link>
             <Link className="button button-secondary" to="/workouts/new">
               Log workout

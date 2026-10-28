@@ -1,12 +1,12 @@
 # Fitness and Workout Tracker System
 
-CPS714 Group 22 MERN app: Sprint 1 registration, username/password and Google authentication, session security, and an editable profile, plus **proposed Sprint 2 workout logging** (create, history, details, edit, delete) scoped to the authenticated owner.
+CPS714 Group 22 MERN app: Sprint 1 registration, username/password and Google authentication, session security, and an editable profile; **proposed Sprint 2 workout logging** (create, history, details, edit, delete); and **proposed Sprint 3** Google-account workout identity, a month calendar of scheduled gym sessions and logged workouts, and basic kg progress from saved logs.
 
-S1-01 (repository setup) is complete. This codebase implements **S1-02 through S1-09** and **proposed S2-01 through S2-08**. Course artifacts live in [`docs/sprint-2/`](docs/sprint-2/README.md). Diet planning, social features, and advanced analytics are not in this sprint.
+S1-01 (repository setup) is complete. This codebase implements **S1-02 through S1-09**, **proposed S2-01 through S2-08**, and **proposed S3-01 through S3-07**. Course artifacts live in [`docs/sprint-2/`](docs/sprint-2/README.md) and [`docs/sprint-3/`](docs/sprint-3/README.md). Diet planning, social features, and advanced analytics are not in this sprint.
 
 ## Stack
 
-- **MongoDB** for user accounts, workout logs, and session storage
+- **MongoDB** for user accounts, workout logs, gym sessions, and login-session storage
 - **Express** and **Node.js** for the API
 - **React** (Vite) for the frontend
 - JavaScript throughout
@@ -160,6 +160,14 @@ The first server test run may download a MongoDB binary for the in-memory server
 17. Delete with confirmation; history no longer lists that workout.
 18. Optional: register a second account and paste the first workout’s URL; expect “not found”, not the other user’s data.
 
+### Sprint 3 (proposed calendar and progress)
+
+19. Open **Calendar**. Confirm previous/next month, Today, and the legend (scheduled session vs logged workout).
+20. Select a day with no activity; confirm the empty state. Schedule a gym session; after save you should return to that date.
+21. From the same day, **Log a workout**; the date should be prefilled. Save and return to the calendar.
+22. Open **Progress**. Confirm workout count, choose an exercise, and see highest kg per workout. Copy does not call these personal records.
+23. Optional live Google: sign in with Google (credentials required) and save a workout. Automated tests cover this with a mocked Google provider only.
+
 ## Workout API
 
 All routes require an authenticated session cookie. `POST`, `PATCH`, and `DELETE` also require the `X-CSRF-Token` header from `GET /api/auth/csrf-token`. The owner is always the signed-in user. Sending `owner` or `userId` in the body is rejected.
@@ -249,13 +257,35 @@ Error shape matches Sprint 1: `{ "error": { "code", "message", "details?" } }`.
 
 Frontend routes: `/workouts`, `/workouts/new`, `/workouts/:id`, `/workouts/:id/edit`.
 
+## Calendar, gym sessions, and progress API
+
+These routes also require an authenticated session. `POST`, `PATCH`, and `DELETE` need `X-CSRF-Token`. The owner is always the signed-in user.
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/calendar?from=&to=` | Sessions and workouts for the signed-in user in an inclusive date range (max 45 days) |
+| `GET` | `/api/sessions?from=&to=` | Gym sessions in that range |
+| `POST` | `/api/sessions` | Schedule a gym session |
+| `GET` | `/api/sessions/:id` | Read one owned session |
+| `PATCH` | `/api/sessions/:id` | Update an owned session |
+| `DELETE` | `/api/sessions/:id` | Delete an owned session (`204`) |
+| `GET` | `/api/progress?from=&to=&exercise=` | Workout count and, if `exercise` is set, highest kg per workout for that name |
+
+Session body: `{ "date": "2026-10-18", "title": "Gym - lower body", "notes": "Rack 3", "startTime": "18:30" }`. `notes` and `startTime` are optional. Dates are civil `YYYY-MM-DD` values stored as UTC midnight of that day so calendar cells do not shift with local time zones.
+
+Progress weights are **kilograms only**. The app does not store pounds, so no unit conversion is applied. The payload is not a personal record.
+
+Frontend routes: `/calendar`, `/sessions/new`, `/sessions/:id`, `/sessions/:id/edit`, `/progress`.
+
 ## Project layout
 
-- `client/` — React UI (registration, login, profile, workout pages)
-- `server/` — Express API, Passport authentication, sessions, validation, workout routes
+- `client/` — React UI (auth, profile, workouts, calendar, progress)
+- `server/` — Express API, Passport authentication, sessions, validation, workout/session/calendar/progress routes
 - `shared/accountRules.js` — username, password, and fitness-field rules used by both sides
 - `shared/workoutRules.js` — workout field limits used by both sides
+- `shared/sessionRules.js` / `shared/calendarRules.js` — gym session and date-range rules
 - `docs/sprint-2/` — Sprint 2 plan, Gantt, burndown, EVM, Scrum template, test report, review, retro
+- `docs/sprint-3/` — Sprint 3 proposed backlog, Gantt, burndown, EVM, Scrum template, risks, test report, review, retro
 - `.env.example` — placeholders only; never commit real secrets
 
 Diet planning, social features, and other later-sprint items remain out of scope until selected in a later backlog.

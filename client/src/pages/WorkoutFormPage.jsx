@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { AppHeader } from '../components/AppHeader.jsx';
 import { TextArea, TextInput } from '../components/FormField.jsx';
@@ -10,14 +10,25 @@ import {
   emptyExercise,
   emptySet,
   emptyWorkoutForm,
+  isValidWorkoutDate,
 } from '@shared/workoutRules.js';
+import { safeInternalPath } from '../navigation.js';
+
+function initialWorkoutForm(searchParams) {
+  const form = emptyWorkoutForm();
+  const date = searchParams.get('date');
+  if (isValidWorkoutDate(date)) form.date = date;
+  return form;
+}
 
 export function WorkoutFormPage() {
   const { id } = useParams();
   const isEdit = Boolean(id);
   const { client } = useAuth();
   const navigate = useNavigate();
-  const [values, setValues] = useState(emptyWorkoutForm());
+  const [searchParams] = useSearchParams();
+  const returnTo = safeInternalPath(searchParams.get('returnTo'), '');
+  const [values, setValues] = useState(() => initialWorkoutForm(searchParams));
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
   const [loadError, setLoadError] = useState('');
@@ -123,7 +134,7 @@ export function WorkoutFormPage() {
       const data = isEdit
         ? await client.updateWorkout(id, payload)
         : await client.createWorkout(payload);
-      navigate(`/workouts/${data.workout.id}`, {
+      navigate(returnTo || `/workouts/${data.workout.id}`, {
         replace: true,
         state: { message: isEdit ? 'Workout updated.' : 'Workout saved.' },
       });
@@ -290,7 +301,7 @@ export function WorkoutFormPage() {
               <button className="button-primary" type="submit" disabled={saving}>
                 {saving ? 'Saving…' : isEdit ? 'Save changes' : 'Save workout'}
               </button>
-              <Link className="button button-secondary" to={isEdit ? `/workouts/${id}` : '/workouts'}>
+              <Link className="button button-secondary" to={returnTo || (isEdit ? `/workouts/${id}` : '/workouts')}>
                 Cancel
               </Link>
             </div>

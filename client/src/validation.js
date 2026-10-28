@@ -8,6 +8,8 @@ import {
   PASSWORD_RULES_TEXT,
   USERNAME_RULES_TEXT,
 } from '@shared/accountRules.js';
+import { isValidStartTime } from '@shared/sessionRules.js';
+import { PROGRESS_MAX_RANGE_DAYS } from '@shared/calendarRules.js';
 import {
   EXERCISE_MAX_COUNT,
   EXERCISE_NAME_MAX_LENGTH,
@@ -18,6 +20,7 @@ import {
   SET_WEIGHT_KG_MAX,
   SET_WEIGHT_KG_MIN,
   TITLE_MAX_LENGTH,
+  daysInclusive,
   isValidReps,
   isValidSetWeightKg,
   isValidWorkoutDate,
@@ -116,12 +119,50 @@ export function validateWorkout(values) {
   return errors;
 }
 
+export function validateSession(values) {
+  const errors = {};
+  if (!values.date) errors.date = 'Session date is required.';
+  else if (!isValidWorkoutDate(values.date)) errors.date = 'Enter a valid date as YYYY-MM-DD.';
+
+  const title = values.title?.trim() || '';
+  if (!title) errors.title = 'Session title is required.';
+  else if (title.length > TITLE_MAX_LENGTH) {
+    errors.title = `Title must be at most ${TITLE_MAX_LENGTH} characters.`;
+  }
+
+  const notes = values.notes?.trim() || '';
+  if (notes.length > NOTES_MAX_LENGTH) {
+    errors.notes = `Notes must be at most ${NOTES_MAX_LENGTH} characters.`;
+  }
+
+  if (values.startTime && !isValidStartTime(values.startTime)) {
+    errors.startTime = 'Start time must be HH:MM in 24-hour format.';
+  }
+  return errors;
+}
+
 export function validateWorkoutFilters(values) {
   const errors = {};
   if (values.from && !isValidWorkoutDate(values.from)) errors.from = 'From date must be YYYY-MM-DD.';
   if (values.to && !isValidWorkoutDate(values.to)) errors.to = 'To date must be YYYY-MM-DD.';
   if (values.from && values.to && isValidWorkoutDate(values.from) && isValidWorkoutDate(values.to) && values.from > values.to) {
     errors.to = 'To date must be on or after the from date.';
+  }
+  return errors;
+}
+
+export function validateProgressFilters(values) {
+  const errors = validateWorkoutFilters(values);
+  if (!values.from) errors.from = 'From date is required.';
+  if (!values.to) errors.to = 'To date is required.';
+  if (
+    !errors.from &&
+    !errors.to &&
+    values.from &&
+    values.to &&
+    daysInclusive(values.from, values.to) > PROGRESS_MAX_RANGE_DAYS
+  ) {
+    errors.to = `Date range cannot exceed ${PROGRESS_MAX_RANGE_DAYS} days.`;
   }
   return errors;
 }

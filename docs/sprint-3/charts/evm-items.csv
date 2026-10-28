@@ -1,0 +1,12 @@
+id,budgeted_hours,planned_complete_date,status,actual_hours
+S3-01,6,2026-10-28,open,
+S3-02,8,2026-11-01,open,
+S3-03,5,2026-11-01,open,
+S3-04,5,2026-11-03,open,
+S3-05,6,2026-11-04,open,
+S3-06,4,2026-11-04,open,
+S3-07,8,2026-11-06,open,
+S3-08,4,2026-10-27,open,
+S3-09,2,2026-11-06,open,
+S3-10,1,2026-11-07,open,
+S3-11,1,2026-11-08,open,

@@ -16,6 +16,16 @@ export function notFound(_req, _res, next) {
 }
 
 export function errorHandler(err, _req, res, _next) {
+  if (err.name === 'CastError') {
+    res.status(400).json({
+      error: {
+        code: 'INVALID_ID',
+        message: 'That identifier is not valid.',
+      },
+    });
+    return;
+  }
+
   if (err.code === 11000) {
     const field = duplicateField(err);
     const isEmail = field === 'email';

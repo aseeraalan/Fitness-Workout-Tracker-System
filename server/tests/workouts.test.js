@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import './registerLifecycle.js';
 import { agent, createWorkout, csrfFor, registerUser, sampleWorkout } from './helpers.js';
 
 async function registerPair() {

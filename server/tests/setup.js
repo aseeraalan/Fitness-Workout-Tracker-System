@@ -1,14 +1,4 @@
-import { afterAll, afterEach, beforeAll } from 'vitest';
-import { clearDatabase, startTestApp, stopTestApp } from './helpers.js';
-
-beforeAll(async () => {
-  await startTestApp();
-}, 60_000);
-
-afterEach(async () => {
-  await clearDatabase();
-});
-
-afterAll(async () => {
-  await stopTestApp();
-});
+// Lifecycle hooks live in registerLifecycle.js and are imported by each test file.
+// Vitest 5.0.3 did not provide a suite context to setupFiles in this environment,
+// so this file is intentionally unused as a setupFile.
+export {};

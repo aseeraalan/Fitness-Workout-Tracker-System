@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import './registerLifecycle.js';
 import { agent, csrfFor, registerUser } from './helpers.js';
 
 describe('S1-07 / S1-08 profile APIs', () => {
